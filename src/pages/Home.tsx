@@ -1,7 +1,10 @@
 import React from 'react'
+import { Typography } from 'antd'
+
+const { Title } = Typography
 
 export default function Page404() {
   return <>
-    <h1>Accueil</h1>
+    <Title>Accueil</Title>
   </>
 }

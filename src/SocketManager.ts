@@ -5,12 +5,22 @@ export enum ServoStatus {
   DRAWING = 'DRAWING',
   ERROR = 'ERROR'
 }
+export type SystemInfos = {
+  width: number,
+  height: number
+}
+export type TracePosition = {
+  x: number,
+  y: number
+}
 
 export default class SocketManager extends EventTarget {
 
   private loading: boolean = true
   private socket: Socket
   private status: ServoStatus = ServoStatus.ERROR
+  private systemInfos: SystemInfos | null = null
+  private tracePosition: TracePosition | null = null
 
   constructor() {
     super()
@@ -21,9 +31,21 @@ export default class SocketManager extends EventTarget {
   isLoading() {
     return this.loading
   }
-
   getStatus() {
     return this.status
+  }
+  getSystemInfos() {
+    return this.systemInfos
+  }
+  getTracePosition() {
+    return this.tracePosition
+  }
+
+  askSystemInfos() {
+    this.socket.emit('getSystemInfos')
+  }
+  askTracePosition() {
+    this.socket.emit('getTracePosition')
   }
 
   private handle() {
