@@ -1,12 +1,14 @@
+import http from 'http'
 import express from 'express'
 import path from 'path'
-import api from './api'
+import * as api from './api'
 
 const app = express()
+const server  = http.createServer(app);
 
-app.use('/api/', api)
 app.use(express.static(path.join(__dirname, '../build')))
+api.init(server)
 
-app.listen(process.env.PORT || 3001, () => {
+server.listen(process.env.PORT || 3001, () => {
   console.log('> Server listening on port ' + (process.env.PORT || 3001))
 })

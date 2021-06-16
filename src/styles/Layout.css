@@ -3,6 +3,10 @@
 }
 .header .container {
   display: flex;
+  justify-content: space-between;
+}
+.header .container > div:first-child {
+  display: flex;
 }
 
 .logo {
