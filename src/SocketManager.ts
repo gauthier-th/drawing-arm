@@ -53,7 +53,7 @@ export default class SocketManager extends EventTarget {
     this.socket.on('updateStatus', (status: any) => {
       this.status = ServoStatus[status as keyof typeof ServoStatus]
       this.loading = false
-      this.sendEvent('updateStatus', this.status);
+      this.sendEvent('updateStatus', this.status)
     })
   }
 

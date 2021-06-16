@@ -4,7 +4,7 @@ import path from 'path'
 import * as api from './api'
 
 const app = express()
-const server  = http.createServer(app);
+const server  = http.createServer(app)
 
 app.use(express.static(path.join(__dirname, '../build')))
 api.init(server)
