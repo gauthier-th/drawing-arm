@@ -7,7 +7,9 @@ export enum ServoStatus {
 }
 export type SystemInfos = {
   width: number,
-  height: number
+  height: number,
+  l1: number,
+  l2: number
 }
 export type TracePosition = {
   x: number,

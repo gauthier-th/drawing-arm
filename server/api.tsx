@@ -16,6 +16,12 @@ function handle(client: Socket) {
   client.on('getStatus', () => {
     client.emit('updateStatus', servoController.getStatus().toString())
   })
+  client.on('getSystemInfos', () => {
+    client.emit('updateSystemInfos', servoController.getSystemInfos())
+  })
+  client.on('getTracePosition', () => {
+    client.emit('updateTracePosition', servoController.getPosition())
+  })
   client.on('disconnect', () => {
     clientList.splice(clientList.findIndex(c => c.id === client.id), 1)
   })
@@ -24,5 +30,10 @@ function handle(client: Socket) {
 servoController.on('updateStatus', (status) => {
   for (let client of clientList) {
     client.emit('updateStatus', status.toString())
+  }
+})
+servoController.on('updateTracePosition', (position) => {
+  for (let client of clientList) {
+    client.emit('updateTracePosition', position)
   }
 })
