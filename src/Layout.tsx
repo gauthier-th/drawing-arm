@@ -14,9 +14,10 @@ export type LayoutProps = {
 
 export default function AppLayout({ children }: LayoutProps) {
   const { socketManager } = useContext(Context)
-  const [status, setStatus] = useState<ServoStatus>(socketManager.getStatus())
   const location = useLocation()
   const history = useHistory()
+  const [status, setStatus] = useState<ServoStatus>(socketManager.getStatus())
+  const [selectedKey, setSelectedKey] = useState<string>(location.pathname)
   useEffect(() => {
     const updateStatus = (e: any) => {
       setStatus(e.data)
@@ -27,6 +28,11 @@ export default function AppLayout({ children }: LayoutProps) {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+  useEffect(() => {
+    console.log('change pathname', location.pathname)
+    setSelectedKey(location.pathname)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location])
   return <Layout className="page-layout">
     <Header className="header" style={{ background: '#fff', padding: 0 }}>
       <div className="container">
@@ -34,7 +40,7 @@ export default function AppLayout({ children }: LayoutProps) {
           <div className="logo">
             <img src="/img/logo-esirem.png" alt="logo" />
           </div>
-          <Menu mode="horizontal" defaultSelectedKeys={[location.pathname]} onClick={({ key }) => history.push(key)}>
+          <Menu mode="horizontal" selectedKeys={[selectedKey]} onClick={({ key }) => history.push(key)}>
             <Menu.Item key="/">Accueil</Menu.Item>
             <Menu.Item key="/suivi-trace">Suivi tracé</Menu.Item>
             <Menu.Item key="/formes">Formes</Menu.Item>

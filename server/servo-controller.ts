@@ -17,23 +17,24 @@ export type SystemInfos = {
 }
 export type TracePosition = {
   x: number,
-  y: number,
-  writing?: boolean
+  y: number
 }
 
 
-const wait = (timeout: number) => new Promise(resolve => setTimeout(resolve, timeout));
+const wait = (timeout: number) => new Promise(resolve => setTimeout(resolve, timeout))
 
 export default class ServoController extends EventEmitter {
 
+  private readonly startPos1 = angleToPulse(90)
+  private readonly startPos2 = angleToPulse(90)
   private status: ServoStatus = ServoStatus.IDLING
   private servo1: Gpio
   private servo2: Gpio
   private servo3: Gpio
   private systemInfos: SystemInfos
   private tracePosition: TracePosition
-  private lastPulse1: number = 1500;
-  private lastPulse2: number = 1500;
+  private lastPulse1: number = this.startPos1
+  private lastPulse2: number = this.startPos2
 
   init() {
     (() => {
@@ -51,9 +52,9 @@ export default class ServoController extends EventEmitter {
         this.servo3 = new Gpio(27, { mode: Gpio.OUTPUT })
         this.servo1.servoWrite(1500)
         this.servo2.servoWrite(1500)
-        this.servo3.servoWrite(angleToPulse1(0))
+        this.servo3.servoWrite(angleToPulse(0))
         this.setWriting(false)
-        this.test()
+        // this.test()
       }
       catch {}
     })()
@@ -61,7 +62,7 @@ export default class ServoController extends EventEmitter {
 
   private setStatus(status: ServoStatus) {
     this.status = status
-    this.emit('updateTracePosition', status.toString())
+    this.emit('updateStatus', status.toString())
   }
   getStatus(): ServoStatus {
     return this.status
@@ -85,7 +86,7 @@ export default class ServoController extends EventEmitter {
 
   private async test() {
     await wait(5000)
-    this.setWriting(true)
+    // this.setWriting(true)
 
     await this.drawLine({ x: 200, y: 0 }, { x: 250, y: 0 })
     await wait(5000)
@@ -99,6 +100,26 @@ export default class ServoController extends EventEmitter {
     await this.drawLine({ x: 200, y: 50 }, { x: 200, y: 0 })
 
     this.test()
+  }
+
+  public async drawShape(shape: TracePosition[]) {
+    if (this.status !== ServoStatus.IDLING)
+      return;
+    this.setStatus(ServoStatus.DRAWING)
+    await this.placeServo(shape[0].x, shape[0].y)
+    this.setWriting(true)
+    for (let i = 0; i < shape.length - 1; i++) {
+      await this.drawLine(shape[i], shape[i + 1])
+    }
+    await this.drawLine(shape[shape.length - 1], shape[0])
+    this.setWriting(false)
+    await Promise.all([
+      this.goToAngle(this.lastPulse1, angleToPulse(90), (i: number) => this.servo1.servoWrite(i)),
+      this.goToAngle(this.lastPulse2, angleToPulse(90), (i: number) => this.servo2.servoWrite(i))
+    ])
+    this.lastPulse1 = angleToPulse(90)
+    this.lastPulse2 = angleToPulse(90)
+    this.setStatus(ServoStatus.IDLING)
   }
 
   private async drawLine(p1: TracePosition, p2: TracePosition, step: number = 1) {
@@ -118,8 +139,8 @@ export default class ServoController extends EventEmitter {
     this.setTracePosition({ x, y })
     const t1 = getTheta1(x, y, this.systemInfos.l1, this.systemInfos.l2)
     const t2 = getTheta2(x, y, this.systemInfos.l1, this.systemInfos.l2)
-    const pulse1 = angleToPulse1(t1)
-    const pulse2 = angleToPulse1(t2)
+    const pulse1 = angleToPulse(t1)
+    const pulse2 = angleToPulse(t2)
     // console.log('Pos : ', x, y)
     // console.log('->', t1, pulse1, this.lastPulse1)
     // console.log('->', t2, pulse2, this.lastPulse2)
@@ -147,7 +168,7 @@ export default class ServoController extends EventEmitter {
   }
 
   private async setWriting(enabled: boolean) {
-    this.servo3.servoWrite(angleToPulse1(enabled ? 90 : 0))
+    this.servo3.servoWrite(angleToPulse(enabled ? 90 : 0))
   }
 
 }
@@ -162,7 +183,7 @@ function getTheta2(x: number, y: number, l1: number, l2: number) {
 }
 
 
-function angleToPulse1(angle: number) {
+function angleToPulse(angle: number) {
   if (angle <= 0)
     return 600
   else if (angle <= 90)
@@ -171,4 +192,37 @@ function angleToPulse1(angle: number) {
     return Math.round(angle * ((2300-1450)/(180-90)) + (1450-(2300-1450)/(180-90)*90))
   else
     return 2300
+}
+
+
+export const shapes: { [key: string]: TracePosition[] } = {
+  square: [
+    { x: 200, y: 0 },
+    { x: 250, y: 0 },
+    { x: 250, y: 50 },
+    { x: 200, y: 50 }
+  ],
+  triangle: [
+    { x: 200, y: 0 },
+    { x: 225, y: 50 },
+    { x: 250, y: 0 }
+  ],
+  losange: [
+    { x: 225, y: 50 },
+    { x: 250, y: 0 },
+    { x: 225, y: -50 },
+    { x: 200, y: 0 }
+  ],
+  star: [
+    { x: 230, y: 57 },
+    { x: 237, y: 34 },
+    { x: 260, y: 34 },
+    { x: 241, y: 23 },
+    { x: 250, y: 0 },
+    { x: 230, y: 17 },
+    { x: 210, y: 0 },
+    { x: 219, y: 23 },
+    { x: 200, y: 34 },
+    { x: 223, y: 34 }
+  ]
 }

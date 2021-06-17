@@ -51,6 +51,9 @@ export default class SocketManager extends EventTarget {
   askTracePosition() {
     this.socket.emit('getTracePosition')
   }
+  traceShape(shape: string) {
+    this.socket.emit('traceShape', shape)
+  }
 
   private handle() {
     this.socket.emit('getStatus')

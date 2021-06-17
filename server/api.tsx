@@ -1,6 +1,6 @@
 import { Server, Socket } from 'socket.io'
 import type { Server as HttpServer } from 'http'
-import ServoController from './servo-controller'
+import ServoController, { shapes } from './servo-controller'
 
 const servoController = new ServoController()
 const clientList: Socket[] = []
@@ -21,6 +21,10 @@ function handle(client: Socket) {
   })
   client.on('getTracePosition', () => {
     client.emit('updateTracePosition', servoController.getPosition())
+  })
+  client.on('traceShape', (shape: string) => {
+    if (shape in shapes)
+      servoController.drawShape(shapes[shape]);
   })
   client.on('disconnect', () => {
     clientList.splice(clientList.findIndex(c => c.id === client.id), 1)
