@@ -29,7 +29,6 @@ export default function AppLayout({ children }: LayoutProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   useEffect(() => {
-    console.log('change pathname', location.pathname)
     setSelectedKey(location.pathname)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location])

@@ -1,0 +1,12 @@
+.choose-input-coords button, .set-writing button {
+  margin-left: 8px;
+}
+
+.choose-input-coords input {
+  outline: none;
+  border: 1px solid #666;
+  border-radius: 3px;
+  padding: 6px 4px;
+  margin: 3px 2px;
+  width: 50px;
+}

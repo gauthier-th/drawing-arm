@@ -54,6 +54,12 @@ export default class SocketManager extends EventTarget {
   traceShape(shape: string) {
     this.socket.emit('traceShape', shape)
   }
+  setCoordinates(coordinates: TracePosition) {
+    this.socket.emit('setCoordinates', coordinates)
+  }
+  setWriting(writing: boolean) {
+    this.socket.emit('setWriting', writing)
+  }
 
   private handle() {
     this.socket.emit('getStatus')

@@ -35,6 +35,7 @@ export default class ServoController extends EventEmitter {
   private tracePosition: TracePosition
   private lastPulse1: number = this.startPos1
   private lastPulse2: number = this.startPos2
+  private lastCoordinates: TracePosition | null = null
 
   init() {
     (() => {
@@ -119,6 +120,17 @@ export default class ServoController extends EventEmitter {
     ])
     this.lastPulse1 = angleToPulse(90)
     this.lastPulse2 = angleToPulse(90)
+    this.lastCoordinates = null
+    this.setStatus(ServoStatus.IDLING)
+  }
+
+  public async setCoordinates(position: TracePosition) {
+    this.setStatus(ServoStatus.DRAWING)
+    if (!this.lastCoordinates)
+      await this.placeServo(position.x, position.y)
+    else
+      await this.drawLine(this.lastCoordinates, position)
+    this.lastCoordinates = position
     this.setStatus(ServoStatus.IDLING)
   }
 
@@ -150,6 +162,7 @@ export default class ServoController extends EventEmitter {
     ])
     this.lastPulse1 = pulse1
     this.lastPulse2 = pulse2
+    this.lastCoordinates = null
   }
 
   private async goToAngle(pulseStart: number, pulseEnd: number, func: any) {
@@ -167,7 +180,7 @@ export default class ServoController extends EventEmitter {
     }
   }
 
-  private async setWriting(enabled: boolean) {
+  public async setWriting(enabled: boolean) {
     this.servo3.servoWrite(angleToPulse(enabled ? 90 : 0))
   }
 
