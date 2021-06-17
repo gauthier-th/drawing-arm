@@ -15,11 +15,10 @@ export type SystemInfos = {
 }
 export type TracePosition = {
   x: number,
-  y: number
+  y: number,
+  writing?: boolean
 }
 
-let lastPulse1 = 1500;
-let lastPulse2 = 1500;
 
 const wait = (timeout: number) => new Promise(resolve => setTimeout(resolve, timeout));
 
@@ -31,22 +30,25 @@ export default class ServoController extends EventEmitter {
   private servo3: Gpio
   private systemInfos: SystemInfos
   private tracePosition: TracePosition
+  private lastPulse1: number = 1500;
+  private lastPulse2: number = 1500;
 
   init() {
     (() => {
       try {
         this.systemInfos = {
-          width: 0,
+          width: 500,
           height: 0,
           l1: parseInt(process.env.L1 || '140'),
           l2: parseInt(process.env.L2 || '140')
         }
         this.servo1 = new Gpio(18, { mode: Gpio.OUTPUT })
         this.servo2 = new Gpio(23, { mode: Gpio.OUTPUT })
-        // this.servo3 = new Gpio(27, { mode: Gpio.OUTPUT })
+        this.servo3 = new Gpio(27, { mode: Gpio.OUTPUT })
         this.servo1.servoWrite(1500)
         this.servo2.servoWrite(1500)
-        // this.servo3.servoWrite(0)
+        this.servo3.servoWrite(angleToPulse1(0))
+        this.setWriting(false)
         this.test()
       }
       catch {}
@@ -55,7 +57,7 @@ export default class ServoController extends EventEmitter {
 
   private setStatus(status: ServoStatus) {
     this.status = status
-    this.emit('updateStatus', status.toString())
+    this.emit('updateTracePosition', status.toString())
   }
   getStatus(): ServoStatus {
     return this.status
@@ -72,45 +74,60 @@ export default class ServoController extends EventEmitter {
     else
       return null
   }
+  private setTracePosition(tracePosition: TracePosition) {
+    this.tracePosition = tracePosition
+    this.emit('updateTracePosition', tracePosition)
+  }
 
   private async test() {
     console.log('Servo start in 5s')
     await wait(5000)
+    this.setWriting(true)
 
-    await this.placeServo(200, 0)
+    await this.drawLine({ x: 200, y: 0 }, { x: 250, y: 0 })
     await wait(5000)
 
-    await this.placeServo(250, 0)
+    await this.drawLine({ x: 250, y: 0 }, { x: 250, y: 50 })
     await wait(5000)
 
-    await this.placeServo(250, 50)
+    await this.drawLine({ x: 250, y: 50 }, { x: 200, y: 50 })
     await wait(5000)
 
-    await this.placeServo(200, 50)
+    await this.drawLine({ x: 200, y: 50 }, { x: 200, y: 0 })
 
     this.test()
   }
 
-  private async placeServo(x: number, y: number) {
-    this.tracePosition = {
-      x, y
+  private async drawLine(p1: TracePosition, p2: TracePosition, step: number = 1) {
+    const dist = Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2))
+    for (let i = 0; i <= Math.round(dist); i+=step) {
+      const x = p1.x + i * (p2.x - p1.x) / (Math.round(dist) + 1)
+      const y = p1.y + i * (p2.y - p1.y) / (Math.round(dist) + 1)
+      await this.placeServo(x, y)
     }
+    const lastX = p1.x + Math.round(dist) * (p2.x - p1.x) / (Math.round(dist) + 1)
+    if (lastX < p2.x) {
+      await this.placeServo(p2.x, p2.y)
+    }
+  }
+
+  private async placeServo(x: number, y: number) {
+    this.setTracePosition({ x, y })
     const t1 = getTheta1(x, y, this.systemInfos.l1, this.systemInfos.l2)
     const t2 = getTheta2(x, y, this.systemInfos.l1, this.systemInfos.l2)
     const pulse1 = angleToPulse1(t1)
     const pulse2 = angleToPulse1(t2)
     console.log('Pos : ', x, y)
-    console.log('->', t1, pulse1, lastPulse1)
-    console.log('->', t2, pulse2, lastPulse2)
+    console.log('->', t1, pulse1, this.lastPulse1)
+    console.log('->', t2, pulse2, this.lastPulse2)
     // this.servo1.servoWrite(pulse1)
     // this.servo2.servoWrite(pulse2)
     await Promise.all([
-      this.goToAngle(lastPulse1, pulse1, (i: number) => this.servo1.servoWrite(i)),
-      this.goToAngle(lastPulse2, pulse2, (i: number) => this.servo2.servoWrite(i))
+      this.goToAngle(this.lastPulse1, pulse1, (i: number) => this.servo1.servoWrite(i)),
+      this.goToAngle(this.lastPulse2, pulse2, (i: number) => this.servo2.servoWrite(i))
     ])
-    lastPulse1 = pulse1
-    lastPulse2 = pulse2
-    this.emit('updateTracePosition', { x, y })
+    this.lastPulse1 = pulse1
+    this.lastPulse2 = pulse2
   }
 
   private async goToAngle(pulseStart: number, pulseEnd: number, func: any) {
@@ -126,6 +143,10 @@ export default class ServoController extends EventEmitter {
         await wait(50)
       }
     }
+  }
+
+  private async setWriting(enabled: boolean) {
+    this.servo3.servoWrite(angleToPulse1(enabled ? 90 : 0))
   }
 
 }
