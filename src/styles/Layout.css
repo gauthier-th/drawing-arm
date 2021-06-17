@@ -1,5 +1,6 @@
 .page-layout {
   height: 100%;
+  margin-bottom: 50px;
 }
 .header .container {
   display: flex;

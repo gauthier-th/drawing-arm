@@ -8,10 +8,12 @@ export enum ServoStatus {
   ERROR = 'ERROR'
 }
 export type SystemInfos = {
-  width: number,
-  height: number,
   l1: number,
-  l2: number
+  l2: number,
+  top: number,
+  right: number,
+  bottom: number,
+  left: number
 }
 export type TracePosition = {
   x: number,
@@ -37,10 +39,12 @@ export default class ServoController extends EventEmitter {
     (() => {
       try {
         this.systemInfos = {
-          width: 500,
-          height: 0,
           l1: parseInt(process.env.L1 || '140'),
-          l2: parseInt(process.env.L2 || '140')
+          l2: parseInt(process.env.L2 || '140'),
+          top: parseInt(process.env.TOP || '-310'),
+          right: parseInt(process.env.RIGHT || '310'),
+          bottom: parseInt(process.env.BOTTOM || '150'),
+          left: parseInt(process.env.LEFT || '-160')
         }
         this.servo1 = new Gpio(18, { mode: Gpio.OUTPUT })
         this.servo2 = new Gpio(23, { mode: Gpio.OUTPUT })
@@ -80,7 +84,6 @@ export default class ServoController extends EventEmitter {
   }
 
   private async test() {
-    console.log('Servo start in 5s')
     await wait(5000)
     this.setWriting(true)
 
@@ -117,11 +120,9 @@ export default class ServoController extends EventEmitter {
     const t2 = getTheta2(x, y, this.systemInfos.l1, this.systemInfos.l2)
     const pulse1 = angleToPulse1(t1)
     const pulse2 = angleToPulse1(t2)
-    console.log('Pos : ', x, y)
-    console.log('->', t1, pulse1, this.lastPulse1)
-    console.log('->', t2, pulse2, this.lastPulse2)
-    // this.servo1.servoWrite(pulse1)
-    // this.servo2.servoWrite(pulse2)
+    // console.log('Pos : ', x, y)
+    // console.log('->', t1, pulse1, this.lastPulse1)
+    // console.log('->', t2, pulse2, this.lastPulse2)
     await Promise.all([
       this.goToAngle(this.lastPulse1, pulse1, (i: number) => this.servo1.servoWrite(i)),
       this.goToAngle(this.lastPulse2, pulse2, (i: number) => this.servo2.servoWrite(i))

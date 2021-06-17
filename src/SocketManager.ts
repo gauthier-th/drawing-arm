@@ -6,10 +6,12 @@ export enum ServoStatus {
   ERROR = 'ERROR'
 }
 export type SystemInfos = {
-  width: number,
-  height: number,
   l1: number,
-  l2: number
+  l2: number,
+  top: number,
+  right: number,
+  bottom: number,
+  left: number
 }
 export type TracePosition = {
   x: number,
@@ -56,6 +58,14 @@ export default class SocketManager extends EventTarget {
       this.status = ServoStatus[status as keyof typeof ServoStatus]
       this.loading = false
       this.sendEvent('updateStatus', this.status)
+    })
+    this.socket.on('updateSystemInfos', (systemInfos: any) => {
+      this.systemInfos = systemInfos
+      this.sendEvent('updateSystemInfos', this.systemInfos)
+    })
+    this.socket.on('updateTracePosition', (tracePosition: any) => {
+      this.tracePosition = tracePosition
+      this.sendEvent('updateTracePosition', this.tracePosition)
     })
   }
 
