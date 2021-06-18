@@ -1,46 +1,47 @@
-# Getting Started with Create React App
+# Drawing Arm (traceur)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Ceci est un projet d'école consistant à dessiner des formes avec un Raspberry PI, des servomoteurs et un site web.
 
-## Available Scripts
+## Aperçu
 
-In the project directory, you can run:
+Site web :
 
-### `yarn start`
+![screenshot-suivi-trace](https://user-images.githubusercontent.com/37781713/122549475-ce1ecf80-d032-11eb-938f-6187fc3101f2.png)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Exemple en fonctionnement (traçage d'un carré) :
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+https://user-images.githubusercontent.com/37781713/122550028-7765c580-d033-11eb-8827-d06dfd35e555.mp4
 
-### `yarn test`
+## Utilisation
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Ce projet nécessite Node.js, Yarn et doit être lancé sur une carte Raspberry PI 3.
 
-### `yarn build`
+Installation :
+```
+yarn
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Démarrage du serveur :
+```
+yarn server
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Démarrage de la version de développement du client :
+```
+yarn start
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Création de la version de production du client (disponible dans le dossier `build/`):
+```
+yarn build
+```
 
-### `yarn eject`
+Note : lorsque la version de développement du client est utilisé, le serveur et le client doivent être tous les deux démarrés.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## Licence
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+MIT Licence
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+Copyright (c) 2021 gauthier-th (mail@gauthierth.fr)
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+Créé par Tom, Baptiste, Clément et Gauthier.
